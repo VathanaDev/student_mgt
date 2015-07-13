@@ -12,20 +12,16 @@ import controller.ActionForward;
 import model.dao.StudentDAO;
 import model.dto.Student;
 
-public class ViewStudentCon implements Action {
+public class UpdateStatusCon implements Action {
 
 	@Override
 	public ActionForward execute(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		
 		StudentDAO dao = new StudentDAO();
-		ArrayList<Student> arr = dao.viewStudent();
 		
-		// get convert data to json
-		resp.setContentType("application/json");
-		resp.setCharacterEncoding("UTF-8");
+		// update
+		dao.updateStatus(req.getParameter("stu_id"), req.getParameter("stu_status"));
 		
-		String article = new Gson().toJson(arr);
-		resp.getWriter().write(article);
+		
 		return null;
 	}
 
