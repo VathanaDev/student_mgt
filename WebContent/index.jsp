@@ -16,11 +16,15 @@
 		<script src="js/bootstrap.min.js" type="text/javascript"></script>
 		<link rel="stylesheet" href="css/bootstrap.min.css">-->
 		<link href="css/style.css" rel="stylesheet">
+		
+		<!-- sweet alert -->
+		<script src="js/sweetalert.min.js"></script> 
+		<link rel="stylesheet" type="text/css" href="css/sweetalert.css">
 	</head>
 	<body>
 		<div class="container">
 			<div class="page-header"><h1>Student Management</h1></div>
-			<div class='panel panel-success'>
+			<div class='panel panel-primary'>
 				<div class="head form-inline panel-heading">
 					<!--search-->
 					<div class="form-group">
@@ -30,11 +34,7 @@
 					
 					<!--class-->
 					<select class='form-control' name="txt_class" id="txt_class" onchange="search()">
-						<!--<option value="all">All Class</option>
-						<option value="BTB">BTB</option>
-						<option value="PP">PP</option>
-						<option value="KPS">KPS</option>
-						<option value="SR">SR</option>-->
+						
 					</select>
 					
 					<!--status-->
@@ -79,6 +79,15 @@
               
               <!--modal body-->
               <div class="modal-body">
+               
+               <!--message-->
+                <div class="bs-example" style="display:none;">
+                    <div class="alert alert-danger fade in">
+                        <a href="#" class="close" data-dismiss="alert">&times;</a>
+                        <strong>Error!</strong> &nbsp;&nbsp; <span class="message"></span>
+                    </div>
+                </div><!--end message-->
+                
                 <form id="inputForm" method="post" class="form-horizontal">
                     
                       <div class="form-group">
@@ -236,7 +245,7 @@
                                 message: 'The class is required'
                             },
                             stringLength: {
-                                min: 3,
+                                min: 2,
                                 max: 5,
                                 message: 'The class must be at lease 3 and max is 5 character'
                             }
@@ -257,305 +266,40 @@
                 // Some instances you can use are
                 var $form = $(e.target),        // The form instance
                     fv    = $(e.target).data('formValidation'); // FormValidation instance
-
+                
+                
                 // start process
                 if($('#save').val() == 'Save'){
                     // call add function
                     addStudent();
-                    //alert('Save');
+                    
                 }else{
                     // call update function
                     updateStudent();
-                    //alert('Update');
+                    
                 }
                 
             });
             
             // reset form on close
-            $('#modalForm').on('hidden.bs.modal', function(){
+            $('#modalForm').on('hidden.bs.modal', function(e){
+                
+                // reset form data
                 $(this).find('form')[0].reset();
+                
                 // clear id state
                 $('#stuId').removeAttr('disabled');
+                
                 // clear gender checkstate
                 $('#male').removeAttr('checked');
                 $('#female').removeAttr('checked');
+                
             });
 		});
 		
-        // get class list
-        function getClassList(){
-            var classList = "";
-            classList += "<option value='all'>All Class</option>";
-            $.get('getClassList.ktv', function(data){
-                for(var i=0; i<data.length; i++){
-                    classList += "<option value='"+data[i]+"'>"+data[i]+"</option>";
-                }
-                // add class list to select element
-                $('#txt_class').html(classList);
-            });
-            
-            
-        }
-        
-		// view student
-		function viewStudent(){
-			$.getJSON("viewStudent.ktv", function(data){
-				$('#display').html(displayList(data));
-			});
-		} // end view student
-		
-		
-		// display list of student
-		function displayList(data){
-			var list = "";
-			list += "<table class='table table-striped table-bordered'>";
-				list += "<tr>";
-					list += "<th class='center'>ID</th>";
-					list += "<th class='center'>Name</th>";
-					list += "<th class='center'>Gender</th>";
-					list += "<th class='center'>University</th>";
-					list += "<th class='center'>Class</th>";
-					list += "<th class='center'>Status</th>";
-                    list += "<th class='center'>Action</th>";
-				list += "</tr>";
-				
-				// loop data to table
-				for(var i=0; i<data.length; i++){
-					list += "<tr>";
-                        list += "<td>"+data[i].stu_id+"</td>";
-                        list += "<td>"+data[i].stu_name+"</td>";
-                        var gender = data[i].stu_gender;
-                        list += "<td class='center'>"+((gender=='1')?'Male':'Female')+"</td>";
-                        list += "<td class='center'>"+data[i].stu_university+"</td>";
-                        list += "<td class='center'>"+data[i].stu_class+"</td>";
-
-                        var img = "";
-                        var status = "";
-                        if(data[i].stu_status == 1){
-                            img = "check.png";
-                            status = "1";
-                        }else{
-                            img = "uncheck.png";
-                            status = "0";
-                        }
-
-                        list += "<td class='center'><img class='status' stu_id='"+data[i].stu_id+"' status='"+status+"' src='img/"+img+"' onclick='updateStatus(this);'></td>";
-                        // action block
-                        list += "<td class='center'>";
-                            list += "<div class='btn-group'>";
-                                list += "<input class='btn btn-success' type='button' id='update' stu_id='"+data[i].stu_id+"' value='Edit' title='Update Student Info' onclick='changeModal(this); fillInfo(this);' data-toggle='modal' data-target='#modalForm'>";
-                                list += "<input class='btn btn-danger' type='button' value='Delete' stu_id='"+data[i].stu_id+"' onclick='addIdToDelete(this)' data-toggle='modal' data-target='#modalDelete'>";
-                            list += "</div>";
-                        list += "</td>";
-					list += "</tr>";
-				}
-			list += "</table>";
-			
-			var footer = "<p class='label label-info'>Total Student: " + data.length + "</p>";
-			$('.panel-footer').html(footer);
-			
-			return list;
-		}
-		
-		// search
-		function search(){
-			// get id from input
-			var txt_name = $('#txt_search').val();
-			var txt_class = $('#txt_class').val();
-			var txt_status = $('#txt_status').val();
-			
-			// create data object
-			var std = {stu_name: txt_name, stu_class: txt_class, stu_status: txt_status};
-			
-			// post data
-			$.post("searchStudent.ktv", std, function(data){
-				$('#display').html(displayList(data));
-			});
-		}
-		
-		// update student status
-		function updateStatus(selector){
-			var status = $(selector).attr('status');
-			var id = $(selector).attr('stu_id');
-			if(status == '0'){
-				status = '1';
-			}else{
-				status = '0';
-			}
-			
-			$.post("updateStatus.ktv", { stu_id: id, stu_status: status }, function(data){
-				var img = "img/check.png";
-				if(status==0)
-					img = "img/uncheck.png";
-	 			// change image
-				$(selector).attr('src', img);
-	 			// change status attribute
-	 			$(selector).attr('status', status);
-			});
-		}
-		
-        // chang modal name
-        function changeModal(selector){
-            var modalTitle = $(selector).attr('title');
-            $('.modal-title').html(modalTitle);
-            // change the save button action
-            if(modalTitle == 'Add New Student'){
-                $('#save').html('Save'); 
-                $('#save').val('Save');
-            }else{
-                $('#save').html('Save Changes'); 
-                $('#save').val('Save Changes'); 
-            }
-        }
-        
-        // check id
-        function checkId(id){
-            $.get('checkStudentId.ktv', {stu_id: id}, function(data){
-                var status = false;
-                if(data.localeCompare(id)==0){
-                    status = true;   
-                }
-                
-                callback(status);
-                //return status;
-            });
-        }
-        
-        // add student
-        function addStudent(){
-            var id = $('#stuId').val();
-            $.get('checkStudentId.ktv', {stu_id: id}, function(data){
-                if(data.localeCompare(id)==0){
-                    alert('ID is already exist.');
-                }else{
-                    // do process when id is not exist 
-                    var name = $('#firstName').val() + " " + $('#lastName').val();
-                    var gender = $('input[name=gender]').val();
-                    var university = $('#stuUniversity').val();
-                    var sClass = $('#stuClass').val();
-                    $.ajax("addStudent.ktv",{
-                        method: 'POST',
-                        data: {
-                            stu_id: id,
-                            stu_name: name,
-                            stu_gender: gender,
-                            stu_university: university,
-                            stu_class: sClass
-                        },
-                        success: function(d){
-                            alert("New Student has been added.");
-                            // clear and hide the form
-                            $('#inputForm').trigger('reset');
-                            $('#modalForm').modal('toggle');
-                            // reload data
-                            getClassList();
-                            viewStudent();
-                        },
-                        error: function(d){
-                            alert("Cannot add student.");        
-                        }
-                    });
-                }
-                
-            });
-        }
-        
-        // fill information to modal for update
-        function fillInfo(student){
-            var id = $(student).attr('stu_id');
-            // select data from database
-            $.post('viewStudentById.ktv', {stu_id: id}, function(data){
-                $('#stuId').val(data.stu_id);
-                // disable the id field
-                $('#stuId').attr('disabled', 'disabled');
-                
-                $('#firstName').val(data.stu_name.split(' ')[0]);
-                $('#lastName').val(data.stu_name.split(' ')[1]);
-                
-                var gender = data.stu_gender;
-                if(gender.localeCompare('1')==0){
-                    $('#male').attr('checked', 'checked');
-                }else{
-                    $('#female').attr('checked', 'checked');   
-                }
-                
-                $('#stuUniversity').val(data.stu_university);
-                $('#stuClass').val(data.stu_class);
-            });
-        }
-        
-        // update student
-        function updateStudent(){
-            var id = $('#stuId').val();
-            var name = $('#firstName').val() + " " + $('#lastName').val();
-            var gender = $('input[name=gender]').val();
-            var university = $('#stuUniversity').val();
-            var sClass = $('#stuClass').val();
-            
-            $.ajax("updateStudent.ktv",{
-                method: 'POST',
-                data: {
-                    stu_id: id,
-                    stu_name: name,
-                    stu_gender: gender,
-                    stu_university: university,
-                    stu_class: sClass
-                },
-                success: function(d){
-                    // clear and hide the form
-                    alert("Your modify has been saved.");
-                    $('#inputForm').trigger('reset');
-                    $('#modalForm').modal('toggle');
-                    // reload data
-                    getClassList();
-                    viewStudent();
-                },
-                error: function(d){
-                    alert("Cannot update student.");        
-                }
-            });
-        }
-        
-        // add id to delete modal form
-        function addIdToDelete(selector){
-            // add student id to delete to modal confirmation form
-            $('#confirmId').html($(selector).attr('stu_id')); 
-            // add id to btnDelete attribute
-            $('#btnDelete').attr('stu_id', $(selector).attr('stu_id'));    
-        }
-        
-        // clear delete
-        function clearDelete(){
-            // clear student id from #confirmId
-            $('#confirmId').html('');
-            // remove stu_id attribute from btnDelete
-            $('#btnDelete').removeAttr('stu_id');
-        }
-        
-        // delete student
-        function deleteStudent(selector){
-           $.post('deleteStudent.ktv', {
-               stu_id: $(selector).attr('stu_id')
-           }, 
-            function(){
-               // close form
-               $('#modalDelete').modal('toggle');
-               // refresh list
-               getClassList();
-               viewStudent();
-               // clearDelete
-               clearDelete();
-               
-           });
-        }
-        
 	</script>
 	
     
-    <!--validate the form-->
-    
-    <script>
-        
-    </script>
+    <script src="js/script.js" type="text/javascript"></script>
     
 </html>
