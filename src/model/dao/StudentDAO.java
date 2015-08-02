@@ -45,7 +45,7 @@ public class StudentDAO {
 	 * */
 	public ArrayList<Student> viewStudent() throws SQLException{
 		ArrayList<Student> arr = new ArrayList<Student>();
-		ps = con.prepareStatement("SELECT * FROM hrd_students");
+		ps = con.prepareStatement("SELECT * FROM hrd_students ORDER by cast(replace(stu_id, '131N', '') as INTEGER) DESC");
 		rs = ps.executeQuery();
 		// loop from result set and add object student to arraylist
 		while(rs.next()){
@@ -97,7 +97,7 @@ public class StudentDAO {
 	 * */
 	public ArrayList<Student> searchStudent(String stu_name, String class_status) throws SQLException{
 		ArrayList<Student> arr = new ArrayList<Student>();
-		ps = con.prepareStatement("SELECT * FROM hrd_students WHERE stu_name ~* CONCAT('.*', ?, '.*')" + class_status);
+		ps = con.prepareStatement("SELECT * FROM hrd_students WHERE stu_name ~* CONCAT('.*', ?, '.*')" + class_status + " ORDER by cast(replace(stu_id, '131N', '') as INTEGER) DESC");
 		ps.setString(1, stu_name);
 		rs = ps.executeQuery();
 		// loop from result set and add object student to arraylist
