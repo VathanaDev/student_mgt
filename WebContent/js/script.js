@@ -150,7 +150,7 @@
                             stu_class: sClass
                         },
                         success: function(d){
-                            swal("Congratulation!", "New Student has been added successfully.", "success")
+                            swal("Congratulation!", "New Student has been added successfully.", "success");
                             // clear and hide the form
                             $('#inputForm').trigger('reset');
                             $('#modalForm').modal('toggle');
